@@ -11,13 +11,13 @@ class Game:
         # size is the total size of the array
         self.size = width * depth
         # start and end cell are vectors for the start and end position
-        self.start_cell = array(start_cell)
-        self.end_cell = array(end_cell)
+        self.start_cell = start_cell
+        self.end_cell = end_cell
         # seed contains the random seed used by randint
         self.seed = seed
         random.seed(seed)
         # array contains the game board
-        self.game_array = array(random.randint(9, size=(depth, width)))
+        self.game_array = array(random.randint(9, size=(width, depth)))
         self.position = start_cell
         # contains current time elapsed
         self.time = 0
@@ -25,26 +25,24 @@ class Game:
         self.travelled = []
 
     # moves the current position and add the time of the new position to the current time value
-    # only allows adjacent movement (no diagonals)
+    # only allows adjacent movement
     def move(self, direction):
-        if direction[0] + direction[1] == 1:
+        if (direction[0] in (-1, 0, 1)) or (direction[1] in (-1, 0, 1)):
             # Adds the current location to the list of travelled locations
             self.travelled.append(self.position)
             # Moves the current position to the next
-            self.position += direction
+            self.position = [self.position[0] + direction[0], self.position[1] + direction[1]]
             # checks to see if the end tile is reached
             if self.position == self.end_cell:
                 # if the end tile is reached the movement stops and the movement returns true to indicate that the
-                # game is won
-                print("End cell reached!")
+                # game is won, doesn't count the time for the start and end tiles as they seem to not be relevant from
+                # the rules
+                print("End cell reached!, Time: " + str(self.time))
                 return True
             else:
                 # Adds the time value of the new location to the current time value
                 self.time += self.game_array[self.position[0], self.position[1]]
                 return False
-        elif direction[0] + direction[1] > 1:
-            print("Tried to move too far")
-            return False
         else:
-            print("No Movement at all?")
+            print("Invalid Move")
             return False
