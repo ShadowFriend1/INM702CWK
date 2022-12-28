@@ -1,14 +1,15 @@
 from game import Game
 from numpy import random
 
+
 # My algorithm to find the shortest path
 def my_find_shortest(game):
-    # vertzontal distance between the start and end cell
+    # horizontal distance between the start and end cell
     vert_diff = game.end_cell[1] - game.start_cell[1]
-    # horiical distance between the start and end cell
+    # vertical distance between the start and end cell
     hori_diff = game.end_cell[0] - game.start_cell[0]
 
-    # Starts the path of travertsal at the starting cell
+    # Starts the path of traversal at the starting cell
     path = [game.start_cell]
 
     # The set of moves the algorithm makes
@@ -67,6 +68,7 @@ def my_find_shortest(game):
         path.append([path[-1][0] + best_move[0], path[-1][1] + best_move[1]])
         moves.append(best_move)
     return path, moves
+
 
 def dijkstra_shortest(game):
     path = []
