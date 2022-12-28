@@ -1,3 +1,7 @@
+import sys
+
+import numpy as np
+
 from game import Game
 from numpy import random
 
@@ -53,7 +57,7 @@ def my_find_shortest(game):
         for h in vert_range:
             for v in hori_range:
                 # Checks to see if the checked move is within the array
-                if v + path[-1][0] <= game.depth - 1 and h + path[-1][1] <= game.width - 1:
+                if 0 <= v + path[-1][0] <= game.depth - 1 and 0 <= h + path[-1][1] <= game.width - 1:
                     # Finds the time value of the proposed move
                     g = game.game_array[v + path[-1][0], h + path[-1][1]]
                     # If it is the lowest time value checked so far it makes it the best move
@@ -71,18 +75,59 @@ def my_find_shortest(game):
 
 
 def dijkstra_shortest(game):
-    path = []
-    moves = []
-    return path, moves
+    # Array storing whether nodes have been visited as the current node
+    visited = np.full((game.width, game.depth), False)
+    # Array storing tentative distance values
+    tent_distance = np.copy(game.game_array)
+    # Sets tentative distance values to -1 (representing infinity), sets start node to 0
+    for i in range(0, len(tent_distance)):
+        for j in range(0, len(tent_distance[0])):
+            if [i, j] == game.start_cell:
+                tent_distance[i, j] = 0
+            else:
+                tent_distance[i, j] = -1
+    current_node = game.start_cell
+    # Repeats until all nodes have been visited
+    while False in visited:
+        # visits all adjacent nodes
+        for h in (-1, 0, 1):
+            for v in (-1, 0, 1):
+                # The node currently being visited
+                visit = [current_node[0] + h, current_node[1] + v]
+                # if the node being visited exists, is not recorded as having been visited as a current node and has a
+                # tentative distance value smaller than the new distance, record the new distance in that node
+                if [h, v] != [0, 0] and (0 <= visit[0] <= game.width - 1) and (0 <= visit[1] <= game.depth - 1) and \
+                        not visited[visit[0], visit[1]]:
+                    dist = tent_distance[current_node[0], current_node[1]] + game.game_array[visit[0], visit[1]]
+                    if tent_distance[visit[0], visit[1]] == -1 or \
+                            dist < tent_distance[visit[0], visit[1]]:
+                        tent_distance[visit[0], visit[1]] = dist
+        # Set the current node as visited
+        visited[current_node[0], current_node[1]] = True
+        # Set the best distance to infinity
+        best_distance = -1
+        # Loop through all nodes and find the best distance to be the next current node, then set that node to the
+        # current node
+        for h in range(0, len(tent_distance)):
+            for v in range(0, len(tent_distance[0])):
+                if tent_distance[h, v] != -1 and (tent_distance[h, v] < best_distance or best_distance == -1) and \
+                        not visited[h, v]:
+                    best_distance = tent_distance[h, v]
+                    current_node = [h, v]
+    return tent_distance[game.end_cell[0], game.end_cell[1]], tent_distance
 
 
 # Run the script
 if __name__ == '__main__':
     seed = random.randint(1000)
     game = Game(10, 10, [0, 0], [9, 9], seed)
+    # print(game.game_array)
+    # path, moves = my_find_shortest(game)
+    # print(path)
+    # for m in moves:
+    #     game.move(m)
+    shortest, tent_distance = dijkstra_shortest(game)
     print(game.game_array)
-    path, moves = my_find_shortest(game)
-    print(path)
-    for m in moves:
-        game.move(m)
-
+    print(tent_distance)
+    print(shortest)
+    sys.exit(0)
