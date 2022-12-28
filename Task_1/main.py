@@ -1,16 +1,10 @@
-# This is a sample Python script.
+from game import Game
+from numpy import random
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
+# Run the script
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    seed = random.randint(1000)
+    game = Game(10, 10, [0, 0], [9, 9], seed)
+    print(game.game_array)
+    print(game.position)
+    print(game.game_array[game.position[0], game.position[1]])
