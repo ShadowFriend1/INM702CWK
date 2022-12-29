@@ -2,7 +2,7 @@ import sys
 
 import numpy as np
 
-from game import Game
+from src.task_1.game import Game
 from numpy import random
 
 
@@ -120,14 +120,14 @@ def dijkstra_shortest(game):
 # Run the script
 if __name__ == '__main__':
     seed = random.randint(1000)
-    game = Game(10, 10, [0, 0], [9, 9], seed)
-    # print(game.game_array)
-    # path, moves = my_find_shortest(game)
-    # print(path)
-    # for m in moves:
-    #     game.move(m)
-    shortest, tent_distance = dijkstra_shortest(game)
+    game = Game(10, 10, [0, 0], [9, 9], 0)
     print(game.game_array)
+    path, moves = my_find_shortest(game)
+    print(path)
+    print(moves)
+    for m in moves:
+        game.move(m)
+    shortest, tent_distance = dijkstra_shortest(game)
     print(tent_distance)
     print(shortest)
     sys.exit(0)

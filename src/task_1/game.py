@@ -1,5 +1,6 @@
 from numpy import random, array
 
+
 # A class representing the game board
 class Game:
 
@@ -27,7 +28,9 @@ class Game:
     # moves the current position and add the time of the new position to the current time value
     # only allows adjacent movement
     def move(self, direction):
-        if (direction[0] in (-1, 0, 1)) or (direction[1] in (-1, 0, 1)):
+        if ((direction[0] in (-1, 0, 1)) and (direction[1] in (-1, 0, 1)) and
+            (0 <= self.position[0] + direction[0] <= self.width - 1 and
+             0 <= self.position[1] + direction[1] <= self.depth - 1)) and (direction[0] != 0 or direction[1] != 0):
             # Adds the current location to the list of travelled locations
             self.travelled.append(self.position)
             # Moves the current position to the next
@@ -38,11 +41,11 @@ class Game:
                 # game is won, doesn't count the time for the start and end tiles as they seem to not be relevant from
                 # the rules
                 print("End cell reached!, Time: " + str(self.time))
-                return True
+                return True, False
             else:
                 # Adds the time value of the new location to the current time value
                 self.time += self.game_array[self.position[0], self.position[1]]
-                return False
+                return False, False
         else:
             print("Invalid Move")
-            return False
+            return False, True
