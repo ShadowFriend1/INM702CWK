@@ -16,7 +16,7 @@ class My_Cnn:
         weights = []
         for i in range(0, len(layers)):
             if i > 0:
-                prev_layer = layers[i-1][1]
+                prev_layer = layers[i - 1][1]
             else:
                 prev_layer = data_size
             if layers[i][0] in ("relu", "sigmoid"):
@@ -30,7 +30,8 @@ class My_Cnn:
 
         self.weights = weights
 
-    # Returns the result of a sigmoid function applied to a value/array
+    # Returns the result of a sigmoid function applied to a value/array after normalising the array to prevent overflow
+    # errors (takes a long time)
     @staticmethod
     def sigmoid(z):
         return 1 / (1 + np.exp(-z))
@@ -38,7 +39,7 @@ class My_Cnn:
     # Return the result of an inverse sigmoid function applied to a value/array
     @staticmethod
     def sigmoid_back(z):
-        return z * (1 - z)
+        return np.exp(-z) / (np.exp(-z) + 1) ** 2
 
     # Returns the results of a ReLU function applied to a value/array
     @staticmethod
@@ -53,7 +54,7 @@ class My_Cnn:
     # Returns the results of a softmax function applied to a value/array
     @staticmethod
     def softmax(z):
-        return np.exp(z - np.max(z)) / np.exp(z - np.max(z)).sum()
+        return np.exp(z) / sum(np.exp(z))
 
     # Applies dropout to an array, returning the array with dropout applied as well as the mask used
     # (for backwards pass)
@@ -70,7 +71,7 @@ class My_Cnn:
         # Pass through all layers
         for i in range(0, len(self.layers)):
             if i > 0:
-                prev_a = a_layers[i - 1]
+                prev_a = a_layers[-1]
             else:
                 prev_a = x
             z_layers.append(self.weights[i][0].dot(prev_a) + self.weights[i][1])
@@ -128,7 +129,6 @@ class My_Cnn:
                 sys.exit(1)
             d_w_layers.append(1 / m * dz.dot(prev_a.T))
             d_b_layers.append(1 / m * np.sum(dz))
-
         d_w_layers.reverse()
         d_b_layers.reverse()
         return d_w_layers, d_b_layers
@@ -141,7 +141,6 @@ class My_Cnn:
 
     @staticmethod
     def get_predictions(a_f):
-        print(np.max(np.argmax(a_f, 0)))
         return np.argmax(a_f, 0)
 
     @staticmethod
@@ -159,4 +158,3 @@ class My_Cnn:
                 print(My_Cnn.get_accuracy(predictions, y))
         predictions = My_Cnn.get_predictions(a_layers[-1])
         return My_Cnn.get_accuracy(predictions, y)
-
