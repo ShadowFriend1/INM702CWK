@@ -1,6 +1,7 @@
 import struct
 
 import numpy as np
+from matplotlib import pyplot as plt
 from src.task_2.cnn import My_Cnn
 
 
@@ -26,3 +27,9 @@ if __name__ == "__main__":
                                                   "train-labels.idx1-ubyte", "t10k-images.idx3-ubyte",
                                                   "t10k-labels.idx1-ubyte")
     cnn = My_Cnn(train_x, train_y, test_x, test_y)
+
+    plt.gray()
+    mask = cnn.dropout_mask(train_x[10], 0.5)
+    dropout = cnn.dropout(train_x[10], mask)
+    plt.imshow(dropout)
+    plt.show()
