@@ -1,10 +1,16 @@
-import unittest
+import numpy as np
 
+from src.task_2.cnn import My_Cnn
 
-class MyTestCase(unittest.TestCase):
-    def test_something(self):
-        self.assertEqual(True, False)  # add assertion here
+def test_cnn():
+    # Checks that the relu layers outputs correctly
+    assert My_Cnn.relu(1) == 1
+    assert My_Cnn.relu(-1) == 0
+    assert My_Cnn.relu(0) == 0
+    # Checks that the sigmoid layer outputs correctly
+    assert My_Cnn.sigmoid(1) == 0.7310585786300049
+    assert My_Cnn.sigmoid_back(1) == 0
 
 
 if __name__ == '__main__':
-    unittest.main()
+    test_cnn()

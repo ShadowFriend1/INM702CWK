@@ -13,7 +13,6 @@ def test_load():
         if n.size != current_check.size:
             same_size = False
             break
-        current_check = n
     assert same_size
 
 

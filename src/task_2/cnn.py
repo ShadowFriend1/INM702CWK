@@ -6,11 +6,9 @@ import numpy as np
 # A class representing the cnn
 class My_Cnn:
     # Initialises the variables needed by the network
-    def __init__(self, layers, dropout_p, data_size, output_classes):
+    def __init__(self, layers, data_size, output_classes):
         # layers is a list of what layers will make up the cnn along with how many nodes they will contain
         self.layers = layers
-        # the dropout probability value to be applied in the dropout step
-        self.dropout_p = dropout_p
 
         # Start with random weights for all layers
         weights = []
@@ -39,7 +37,7 @@ class My_Cnn:
     # Return the result of an inverse sigmoid function applied to a value/array
     @staticmethod
     def sigmoid_back(z):
-        return np.exp(-z) / (np.exp(-z) + 1) ** 2
+        return z * (1 - z)
 
     # Returns the results of a ReLU function applied to a value/array
     @staticmethod
@@ -60,11 +58,17 @@ class My_Cnn:
     # (for backwards pass)
     @staticmethod
     def dropout(z, p):
-        mask = (np.random.uniform(low=0, high=1, size=z.shape) >= (1 - p)) / (1 - p)
+        mask = (np.random.rand(*z.shape) < p) / p
         return mask * z, mask
 
     # Runs a forward pass through the cnn
-    def forward_pass(self, x):
+    def forward_pass(self, x, p, dropout):
+        # Applies dropout with probability p if dropout is true (used for training)
+        masks = []
+        if dropout:
+            x, mask = My_Cnn.dropout(x, p)
+            masks.append(mask)
+
         z_layers = []
         a_layers = []
 
@@ -74,20 +78,26 @@ class My_Cnn:
                 prev_a = a_layers[-1]
             else:
                 prev_a = x
-            z_layers.append(self.weights[i][0].dot(prev_a) + self.weights[i][1])
+            z = self.weights[i][0].dot(prev_a) + self.weights[i][1]
+            if dropout:
+                z, mask = My_Cnn.dropout(z, p)
+                masks.append(mask)
+            z_layers.append(z)
             if self.layers[i][0] == "relu":
-                a_layers.append(My_Cnn.relu(z_layers[i]))
+                a = My_Cnn.relu(z_layers[i])
+                a_layers.append(a)
             elif self.layers[i][0] == "sigmoid":
-                a_layers.append(My_Cnn.sigmoid(z_layers[i]))
+                a = My_Cnn.sigmoid(z_layers[i])
+                a_layers.append(a)
             else:
                 print("No " + self.layers[i][0] + " Layer! During Forward Pass")
                 sys.exit(1)
 
-        # Pass through softmax layer
+        # Pass through softmax layer, doesn't apply dropout
         z_layers.append(self.weights[-1][0].dot(a_layers[-1]) + self.weights[-1][1])
         a_layers.append(My_Cnn.softmax(z_layers[-1]))
 
-        return z_layers, a_layers
+        return z_layers, a_layers, masks
 
     # Takes in a result set and reorders it into an array of set size rows and n columns where each column represents a
     # classification of the data (where 1 means true and 0 means false)
@@ -99,14 +109,14 @@ class My_Cnn:
         return one_hot_y
 
     # Runs a backwards pass through the cnn
-    def backward_pass(self, x, y, z_layers, a_layers):
+    def backward_pass(self, x, y, z_layers, a_layers, masks):
         m = y.size
         one_hot_y = My_Cnn.one_hot(y)
         d_w_layers = []
         d_b_layers = []
 
-        # Backward pass through sigmoid layer
-        dz_f = a_layers[-1] - one_hot_y
+        # Backward pass through softmax layer
+        dz_f = (a_layers[-1] - one_hot_y)
         d_w_layers.append(1 / m * dz_f.dot(a_layers[-2].T))
         d_b_layers.append(1 / m * np.sum(dz_f))
 
@@ -120,9 +130,13 @@ class My_Cnn:
                 prev_a = x
             if self.layers[i][0] == "relu":
                 dz = self.weights[-1][0].T.dot(prev_dz) * My_Cnn.relu_back(z_layers[i])
+                if masks:
+                    dz *= masks[i + 1]
                 prev_dz = dz
             elif self.layers[i][0] == "sigmoid":
                 dz = self.weights[-1][0].T.dot(prev_dz) * My_Cnn.sigmoid_back(z_layers[i])
+                if masks:
+                    dz *= masks[i + 1]
                 prev_dz = dz
             else:
                 print("No " + self.layers[i][0] + " Layer! During Backward Pass")
@@ -147,14 +161,18 @@ class My_Cnn:
     def get_accuracy(predictions, y):
         return np.sum(predictions == y) / y.size
 
-    def train(self, x, y, alpha, iterations):
+    def train(self, x, y, alpha, iterations, dropout_p, dropout):
+        predictions = []
         for i in range(0, iterations):
-            z_layers, a_layers = self.forward_pass(x)
-            d_w_layers, d_b_layers = self.backward_pass(x, y, z_layers, a_layers)
+            z_layers, a_layers, mask = self.forward_pass(x, dropout_p, dropout)
+            d_w_layers, d_b_layers = self.backward_pass(x, y, z_layers, a_layers, mask)
             self.update_weights(d_w_layers, d_b_layers, alpha)
-            if i % 50 == 0:
+            if i % 10 == 0:
                 print("iteration: ", i)
-                predictions = My_Cnn.get_predictions(a_layers[-1])
-                print(My_Cnn.get_accuracy(predictions, y))
-        predictions = My_Cnn.get_predictions(a_layers[-1])
-        return My_Cnn.get_accuracy(predictions, y)
+                prediction = My_Cnn.get_predictions(a_layers[-1])
+                predictions.append([My_Cnn.get_accuracy(prediction, y), i])
+                print(predictions[-1][0])
+            final_i = i
+        prediction = My_Cnn.get_predictions(a_layers[-1])
+        predictions.append([My_Cnn.get_accuracy(prediction, y), final_i])
+        return predictions

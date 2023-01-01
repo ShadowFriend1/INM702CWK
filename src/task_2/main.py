@@ -2,8 +2,8 @@ import struct
 import sys
 
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
+import pickle
 from src.task_2.cnn import My_Cnn
 
 
@@ -44,7 +44,15 @@ if __name__ == "__main__":
     train_x, train_y, test_x, test_y = load_mnist("../../data/MNIST/", "train-images.idx3-ubyte",
                                                   "train-labels.idx1-ubyte", "t10k-images.idx3-ubyte",
                                                   "t10k-labels.idx1-ubyte", random_seed)
-    # gradient_descent(train_x, train_y, 0.10, 500)
-    cnn = My_Cnn([["relu", 10], ["sigmoid", 10]], 0.7, len(train_x), 10)
-    cnn.train(train_x, train_y, 0.2, 500)
-    sys.exit(0)
+    cnn = My_Cnn([["relu", 10]], len(train_x), 10)
+    predictions = cnn.train(train_x, train_y, 0.2, 10000, 0.8, True)
+    with open('models/relu_10_sig_10_with_drop_0-8_alpha_0-2_iter_10000', 'wb') as file:
+        pickle.dump(cnn, file)
+    predictions_array = np.zeros((len(predictions), 2))
+    for i in range(0, len(predictions)):
+        predictions_array[i] = predictions[i]
+        predictions_array[i] = predictions[i]
+    plt.plot(predictions_array[:, 1], predictions_array[:, 0])
+    plt.xlabel("Iterations")
+    plt.ylabel("Prediction Accuracy")
+    plt.show()
