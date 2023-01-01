@@ -9,7 +9,7 @@ def test_cnn():
     assert My_Cnn.relu(0) == 0
     # Checks that the sigmoid layer outputs correctly
     assert My_Cnn.sigmoid(1) == 0.7310585786300049
-    assert My_Cnn.sigmoid_back(1) == 0
+    assert My_Cnn.sigmoid_back(1) == 0.19661193324148185
 
 
 if __name__ == '__main__':
