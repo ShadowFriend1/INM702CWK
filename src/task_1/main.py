@@ -144,7 +144,7 @@ def distribution_graphs():
         seed = i
         game = Game(10 + round(i / 10), 10 + round(i / 10), [0, 0], [9+round(i/10), 9 + round(i/10)], seed, "uniform")
         game_normal = Game(10 + round(i / 10), 10 + round(i / 10), [0, 0], [9+round(i/10), 9+round(i/10)], seed,
-                           "normal", 4)
+                           "normal", 2)
         _, _, my_time_uni = my_find_shortest(game)
         d_short_uni, _, _ = dijkstra_shortest(game)
         _, _, my_time_norm = my_find_shortest(game_normal)
@@ -170,7 +170,32 @@ def distribution_graphs():
     plt.ylabel("Mean Shortest Found Path Length")
     plt.show()
 
+# Produces a graph of how the algorithms do on the normal distribution with different standard deviations (0-4)
+def plot_deviation():
+    dev_list = []
+    my_f_list = []
+    d_f_list = []
+    for j in np.arange(0, 4, 0.1):
+        my_time_list = []
+        d_time_list = []
+        for i in range(0, 10):
+            seed = i
+            game = Game(10, 10, [0, 0], [9, 9], seed, "normal", j)
+            _, _, my_time = my_find_shortest(game)
+            d_time, _, _ = dijkstra_shortest(game)
+            my_time_list.append(my_time)
+            d_time_list.append(d_time)
+        my_f_list.append(sum(my_time_list) / len(my_time_list))
+        d_f_list.append(sum(d_time_list) / len(d_time_list))
+        dev_list.append(j)
+    plt.plot(dev_list, my_f_list, label="My Algorithm")
+    plt.plot(dev_list, d_f_list, label="Dijkstra's Algorithm")
+    plt.legend()
+    plt.xlabel("Standard Deviation")
+    plt.ylabel("Mean Shortest Found Path Length")
+    plt.show()
+
 
 # Run the script
 if __name__ == '__main__':
-    distribution_graphs()
+    plot_deviation()
