@@ -38,16 +38,26 @@ def load_mnist(location, tr_x_fn, tr_y_fn, te_x_fn, te_y_fn, seed):
     print("Test set size: " + str(len(te_x[0])))
     return tr_x, tr_y, te_x, te_y
 
+def save_model(model, filename):
+    with open(filename, 'wb') as file:
+        pickle.dump(model, file)
+
+def load_model(filename):
+    with open(filename, 'rb') as file:
+        return pickle.load(file)
+
 
 if __name__ == "__main__":
     random_seed = np.random.randint(0, 10000)
     train_x, train_y, test_x, test_y = load_mnist("../../data/MNIST/", "train-images.idx3-ubyte",
                                                   "train-labels.idx1-ubyte", "t10k-images.idx3-ubyte",
                                                   "t10k-labels.idx1-ubyte", random_seed)
-    cnn = My_Cnn([["relu", 10]], len(train_x), 10)
+
+    cnn = My_Cnn([["relu", 10], ["sigmoid", 10]], len(train_x), 10)
     predictions = cnn.train(train_x, train_y, 0.2, 10000, 0.8, True)
-    with open('models/relu_10_sig_10_with_drop_0-8_alpha_0-2_iter_10000', 'wb') as file:
-        pickle.dump(cnn, file)
+
+    save_model(cnn, 'models/relu_10_sig_10_with_drop_0-8_alpha_0-2_iter_10000')
+
     predictions_array = np.zeros((len(predictions), 2))
     for i in range(0, len(predictions)):
         predictions_array[i] = predictions[i]

@@ -37,7 +37,7 @@ class My_Cnn:
     # Return the result of an inverse sigmoid function applied to a value/array
     @staticmethod
     def sigmoid_back(z):
-        return z * (1 - z)
+        return My_Cnn.sigmoid(z) * (1 - My_Cnn.sigmoid(z))
 
     # Returns the results of a ReLU function applied to a value/array
     @staticmethod
@@ -167,8 +167,8 @@ class My_Cnn:
             z_layers, a_layers, mask = self.forward_pass(x, dropout_p, dropout)
             d_w_layers, d_b_layers = self.backward_pass(x, y, z_layers, a_layers, mask)
             self.update_weights(d_w_layers, d_b_layers, alpha)
-            if i % 10 == 0:
-                print("iteration: ", i)
+            if (i + 1) % 10 == 0:
+                print("iteration: ", i + 1)
                 prediction = My_Cnn.get_predictions(a_layers[-1])
                 predictions.append([My_Cnn.get_accuracy(prediction, y), i])
                 print(predictions[-1][0])
@@ -176,3 +176,9 @@ class My_Cnn:
         prediction = My_Cnn.get_predictions(a_layers[-1])
         predictions.append([My_Cnn.get_accuracy(prediction, y), final_i])
         return predictions
+
+    def predict(self, x, y):
+        _, a_layers, _ = self.forward_pass(x, 0, False)
+        predictions = My_Cnn.get_predictions(a_layers[-1])
+        accuracy = My_Cnn.get_accuracy(predictions, y)
+        return predictions, accuracy

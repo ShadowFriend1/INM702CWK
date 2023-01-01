@@ -1,9 +1,7 @@
-import sys
-
+import matplotlib.pyplot as plt
 import numpy as np
 
 from src.task_1.game import Game
-from numpy import random
 
 
 # My algorithm to find the shortest path
@@ -15,6 +13,9 @@ def my_find_shortest(game):
 
     # Starts the path of traversal at the starting cell
     path = [game.start_cell]
+
+    # starts the time value at 0
+    time = 0
 
     # The set of moves the algorithm makes
     moves = []
@@ -68,17 +69,22 @@ def my_find_shortest(game):
                     elif [v + path[-1][0], h + path[-1][1]] == game.end_cell:
                         best_move = [v, h]
                         break
+        time += lowest_time
         # Adds the best move to both the path and list of moves
         path.append([path[-1][0] + best_move[0], path[-1][1] + best_move[1]])
         moves.append(best_move)
-    return path, moves
+    return path, moves, time
 
 
 def dijkstra_shortest(game):
     # Array storing whether nodes have been visited as the current node
     visited = np.full((game.width, game.depth), False)
     # Array storing tentative distance values
-    tent_distance = np.copy(game.game_array)
+    tent_distance = np.zeros(game.game_array.shape)
+    path = np.empty(game.game_array.shape, dtype=object)
+    for i in range(0, len(path)):
+        for j in range(0, len(path[0])):
+            path[i][j] = []
     # Sets tentative distance values to -1 (representing infinity), sets start node to 0
     for i in range(0, len(tent_distance)):
         for j in range(0, len(tent_distance[0])):
@@ -99,35 +105,72 @@ def dijkstra_shortest(game):
                 if [h, v] != [0, 0] and (0 <= visit[0] <= game.width - 1) and (0 <= visit[1] <= game.depth - 1) and \
                         not visited[visit[0], visit[1]]:
                     dist = tent_distance[current_node[0], current_node[1]] + game.game_array[visit[0], visit[1]]
+                    # Checks to see if the new distance value is smaller that the already stored value
                     if tent_distance[visit[0], visit[1]] == -1 or \
                             dist < tent_distance[visit[0], visit[1]]:
                         tent_distance[visit[0], visit[1]] = dist
+                        path_temp = path[current_node[0], current_node[1]]
+                        path_temp.append([visit[0], visit[1]])
+                        path[visit[0], visit[1]] = path_temp
         # Set the current node as visited
         visited[current_node[0], current_node[1]] = True
         # Set the best distance to infinity
         best_distance = -1
-        # Loop through all nodes and find the best distance to be the next current node, then set that node to the
-        # current node
+        # Loop through all nodes and find the unvisited best distance to be the next current node, then set that node
+        # to the current node
         for h in range(0, len(tent_distance)):
             for v in range(0, len(tent_distance[0])):
                 if tent_distance[h, v] != -1 and (tent_distance[h, v] < best_distance or best_distance == -1) and \
                         not visited[h, v]:
                     best_distance = tent_distance[h, v]
                     current_node = [h, v]
-    return tent_distance[game.end_cell[0], game.end_cell[1]], tent_distance
+    return tent_distance[game.end_cell[0], game.end_cell[1]], tent_distance, path[game.end_cell[0], game.end_cell[1]]
+
+def distribution_graphs():
+    my_shortest_paths_uniform = []
+    my_shortest_paths_normal = []
+    dijkstra_shortest_paths_uniform = []
+    dijkstra_shortest_paths_normal = []
+    # Produces graph of how algorithms perform on different distributions, the array size increases every 10 iteration
+    # and the average path length is recorded against the array size, the start cell is always the top left corner
+    # and the end cell is always the bottom right
+    my_time_uni_list = []
+    my_time_norm_list = []
+    d_time_uni_list = []
+    d_time_norm_list = []
+    size_list = []
+    for i in range(0, 200):
+        # Randomises the array in a consistent way
+        seed = i
+        game = Game(10 + round(i / 10), 10 + round(i / 10), [0, 0], [9+round(i/10), 9 + round(i/10)], seed, "uniform")
+        game_normal = Game(10 + round(i / 10), 10 + round(i / 10), [0, 0], [9+round(i/10), 9+round(i/10)], seed,
+                           "normal", 4)
+        _, _, my_time_uni = my_find_shortest(game)
+        d_short_uni, _, _ = dijkstra_shortest(game)
+        _, _, my_time_norm = my_find_shortest(game_normal)
+        d_short_norm, _, _ = dijkstra_shortest(game_normal)
+        my_time_uni_list.append(my_time_uni)
+        my_time_norm_list.append(my_time_norm)
+        d_time_uni_list.append(d_short_uni)
+        d_time_norm_list.append(d_short_norm)
+        if i % 10 == 0:
+            my_shortest_paths_uniform.append(sum(my_time_uni_list) / len(my_time_uni_list))
+            my_shortest_paths_normal.append(sum(my_time_norm_list) / len(my_time_norm_list))
+            dijkstra_shortest_paths_uniform.append(sum(d_time_uni_list) / len(d_time_uni_list))
+            dijkstra_shortest_paths_normal.append(sum(d_time_norm_list) / len(d_time_norm_list))
+            size_list.append(game.size)
+        if (i + 1) % 10 == 0:
+            print(i + 1, " iterations finished")
+    plt.plot(size_list, my_shortest_paths_uniform, label="Uniform Distribution My Algorithm")
+    plt.plot(size_list, my_shortest_paths_normal, label="Normal Distribution My Algorithm")
+    plt.plot(size_list, dijkstra_shortest_paths_uniform, label="Uniform Distribution Dijkstra's Algorithm")
+    plt.plot(size_list, dijkstra_shortest_paths_normal, label="Normal Distribution Dijkstra's Algorithm")
+    plt.legend()
+    plt.xlabel("Array Size")
+    plt.ylabel("Mean Shortest Found Path Length")
+    plt.show()
 
 
 # Run the script
 if __name__ == '__main__':
-    seed = random.randint(1000)
-    game = Game(10, 10, [0, 0], [9, 9], 0)
-    print(game.game_array)
-    path, moves = my_find_shortest(game)
-    print(path)
-    print(moves)
-    for m in moves:
-        game.move(m)
-    shortest, tent_distance = dijkstra_shortest(game)
-    print(tent_distance)
-    print(shortest)
-    sys.exit(0)
+    distribution_graphs()
