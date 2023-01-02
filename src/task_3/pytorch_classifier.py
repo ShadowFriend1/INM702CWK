@@ -1,8 +1,9 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-
+# Adapted from # Adapted from https://medium.com/@aaysbt/fashion-mnist-data-training-using-pytorch-7f6ad71e96f4
 class CNN(nn.Module):
+    # initialises the model
     def __init__(self, dropout):
         super().__init__()
         self.fc1 = nn.Linear(784, 256)
@@ -12,6 +13,7 @@ class CNN(nn.Module):
         # Dropout Value
         self.dropout = nn.Dropout(dropout)
 
+    # runs the forward pass on the model
     def forward(self, x):
         x = x.view(x.shape[0], -1)
         x = self.dropout(F.relu(self.fc1(x)))

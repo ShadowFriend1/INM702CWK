@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 from src.task_3.covid_classifier import CovidNet
 from src.task_3.pytorch_classifier import CNN
 
-
+# Adapted from https://medium.com/@aaysbt/fashion-mnist-data-training-using-pytorch-7f6ad71e96f4
+# mostly used for nice output formatting
 def train_model(model, train, valid, epochs, filename):
     # Defines the loss function and optimiser
     criterion = nn.NLLLoss()
@@ -51,7 +52,8 @@ def train_model(model, train, valid, epochs, filename):
             valid_loss_min = valid_loss
     return train_losses, valid_losses
 
-
+# Adapted from https://medium.com/@aaysbt/fashion-mnist-data-training-using-pytorch-7f6ad71e96f4
+# mostly used for nice output formatting
 def model_test(model, test):
     test_loss = 0
     class_correct = list(0. for i in range(10))
