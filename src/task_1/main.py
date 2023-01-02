@@ -180,7 +180,7 @@ def plot_deviation():
         d_time_list = []
         for i in range(0, 10):
             seed = i
-            game = Game(10, 10, [0, 0], [9, 9], seed, "normal", j)
+            game = Game(15, 15, [0, 0], [14, 14], seed, "normal", j)
             _, _, my_time = my_find_shortest(game)
             d_time, _, _ = dijkstra_shortest(game)
             my_time_list.append(my_time)

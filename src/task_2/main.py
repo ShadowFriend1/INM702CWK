@@ -82,32 +82,54 @@ def plot_relu_back():
     plt.ylabel("ReLU of value")
     plt.show()
 
+# saves a model using pickle
 def save_model(model, filename):
     with open(filename, 'wb') as file:
         pickle.dump(model, file)
 
+# loads a model using pickle
 def load_model(filename):
     with open(filename, 'rb') as file:
         return pickle.load(file)
 
+# trains a cnn model
+def train_model(model, train_x, train_y, layers, dropout, alpha, iterations):
+    cnn = My_Cnn(layers, len(train_x), 10)
+    predictions = cnn.train(train_x, train_y, alpha, iterations, dropout, True)
+
+    save_model(cnn, 'models/sig_10_with_drop_0-8_alpha_0-2_iter_10000')
+
+    predictions_array = np.zeros((len(predictions), 2))
+    for i in range(0, len(predictions)):
+        predictions_array[i] = predictions[i]
+        predictions_array[i] = predictions[i]
+    plt.plot(predictions_array[:, 1], predictions_array[:, 0])
+    plt.xlabel("Iterations")
+    plt.ylabel("Prediction Accuracy")
+    plt.show()
+    return cnn
+
+def prediction_test(x, model, y, seed):
+    predictions, _ = model.predict(x, y)
+    test_index = np.random.randint(0, len(test_y), 4)
+    images = []
+    for n in test_index:
+        prediction = predictions[n]
+        print("Prediction: ", prediction)
+        print("Label: ", y[n])
+
+        images.append(x[:, n].reshape((28, 28)) * 255)
+
+    for image in images:
+        plt.gray()
+        plt.imshow(image, interpolation='nearest')
+        plt.show()
+
 
 if __name__ == "__main__":
-    plot_sigmoid_back()
-    # random_seed = np.random.randint(0, 10000)
-    # train_x, train_y, test_x, test_y = load_mnist("../../data/MNIST/", "train-images.idx3-ubyte",
-    #                                               "train-labels.idx1-ubyte", "t10k-images.idx3-ubyte",
-    #                                               "t10k-labels.idx1-ubyte", random_seed)
-    #
-    # cnn = My_Cnn([["relu", 10], ["sigmoid", 10]], len(train_x), 10)
-    # predictions = cnn.train(train_x, train_y, 0.2, 10000, 0.8, True)
-    #
-    # save_model(cnn, 'models/relu_10_sig_10_with_drop_0-8_alpha_0-2_iter_10000')
-    #
-    # predictions_array = np.zeros((len(predictions), 2))
-    # for i in range(0, len(predictions)):
-    #     predictions_array[i] = predictions[i]
-    #     predictions_array[i] = predictions[i]
-    # plt.plot(predictions_array[:, 1], predictions_array[:, 0])
-    # plt.xlabel("Iterations")
-    # plt.ylabel("Prediction Accuracy")
-    # plt.show()
+    random_seed = 1
+    train_x, train_y, test_x, test_y = load_mnist("../../data/MNIST/", "train-images.idx3-ubyte",
+                                                  "train-labels.idx1-ubyte", "t10k-images.idx3-ubyte",
+                                                  "t10k-labels.idx1-ubyte", random_seed)
+    cnn = load_model('models/relu_10_with_drop_0-8_alpha_0-2_iter_10000')
+    prediction_test(test_x, cnn, test_y, random_seed)

@@ -62,7 +62,7 @@ class My_Cnn:
         return mask * z, mask
 
     # Runs a forward pass through the cnn
-    def forward_pass(self, x, p, dropout):
+    def forward_pass(self, x, p=None, dropout=False):
         # Applies dropout with probability p if dropout is true (used for training)
         masks = []
         if dropout:
