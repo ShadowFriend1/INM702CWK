@@ -1,9 +1,9 @@
+import pickle
 import struct
-import sys
 
 import numpy as np
 from matplotlib import pyplot as plt
-import pickle
+
 from src.task_2.cnn import My_Cnn
 
 

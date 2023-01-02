@@ -7,10 +7,11 @@ import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
 
+from src.task_3.covid_classifier import CovidNet
 from src.task_3.pytorch_classifier import CNN
 
 
-def train_model(model, train, valid, epochs):
+def train_model(model, train, valid, epochs, filename):
     # Defines the loss function and optimiser
     loss_function = nn.NLLLoss()
     optimiser = optim.SGD(model.parameters(), lr=0.01)
@@ -46,7 +47,7 @@ def train_model(model, train, valid, epochs):
         if valid_loss <= valid_loss_min:
             print('validation loss decreased({:.6f} --> {:.6f}). Saving Model ...'.format(
                 valid_loss_min, valid_loss))
-            torch.save(model.state_dict(), 'model.pt')
+            torch.save(model.state_dict(), filename)
             valid_loss_min = valid_loss
     return train_losses, valid_losses
 
@@ -89,8 +90,7 @@ def model_test(model, test):
         np.sum(class_correct), np.sum(class_total)
     ))
 
-
-if __name__ == "__main__":
+def load_fashion():
     # Loads the Fashion MNIST dataset using pytorch, used from code at:
     # https://medium.com/@aaysbt/fashion-mnist-data-training-using-pytorch-7f6ad71e96f4
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,), )])
@@ -107,21 +107,52 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_set, sampler=train_sample, batch_size=64)
     validation_loader = DataLoader(train_set, sampler=validation_sample, batch_size=64)
     test_loader = DataLoader(test_set, batch_size=64, shuffle=True)
+    return train_loader, validation_loader, test_loader
 
-    # Instantiates the cnn
-    # cnn = CNN(0.2)
-    #
-    # # Trains the cnn
-    # train_losses, valid_losses = train_model(cnn, train_loader, validation_loader, 40)
-    #
-    # plt.plot(train_losses, label='Train Loss')
-    # plt.plot(valid_losses, label='Valid Loss')
-    # plt.xlabel("Epoch")
-    # plt.ylabel("Loss Value")
-    # plt.legend()
-    # plt.show()
+def load_covid():
+    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,), ),
+                                    transforms.Resize((256, 256))])
 
+    train_set = datasets.ImageFolder(root='../../data/Covid19-dataset/train', transform=transform)
+    test_set = datasets.ImageFolder(root='../../data/Covid19-dataset/test', transform=transform)
+
+    ind = list(range(len(train_set)))
+    np.random.shuffle(ind)
+    split = int(np.floor(0.2 * len(train_set)))
+    train_sample = SubsetRandomSampler(ind[:split])
+    validation_sample = SubsetRandomSampler(ind[split:])
+
+    train_loader = DataLoader(train_set, sampler=train_sample, batch_size=64)
+    validation_loader = DataLoader(train_set, sampler=validation_sample, batch_size=64)
+    test_loader = DataLoader(test_set, batch_size=64, shuffle=True)
+
+    return train_loader, validation_loader, test_loader
+
+
+if __name__ == "__main__":
     # Loads the cnn
-    model = CNN(0)
-    model.load_state_dict(torch.load('model.pt'))
-    model_test(model, test_loader)
+    # model = CNN(0)
+    # model.load_state_dict(torch.load('model.pt'))
+    # model_test(model, test_loader)
+
+    # Loads the fashion-MNIST dataset
+    # train_loader, validation_loader, test_loader = load_fashion
+
+    # Creates an instance of the network
+    # cnn = CNN(0.2)
+
+    # Loads the covid database and generates the labels from which folder the items were in
+    train_loader, validation_loader, test_loader = load_covid()
+
+    # Creates an instance of the network
+    cnn = CovidNet(0.2)
+
+    # Trains the cnn
+    train_losses, valid_losses = train_model(cnn, train_loader, validation_loader, 1, 'model_covid.pt')
+
+    plt.plot(train_losses, label='Train Loss')
+    plt.plot(valid_losses, label='Valid Loss')
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss Value")
+    plt.legend()
+    plt.show()
