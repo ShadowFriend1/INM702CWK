@@ -2,6 +2,8 @@ For ease I have been running my scripts by adding the relevant functions to the 
 
 Training of networks are left in comments in the main.py file associated with the task.
 
+The trained models are contained in a folder named models within the relevant task folder
+
 Task 1:
 
 To plot the graph of deviations, run plot_deviation()
@@ -25,3 +27,5 @@ load_covid() and load_fashion() load the relevant datasets
 train_model() is used to train models
 
 model_test() return accuracy values for the models
+
+both models use the same function to train and test, these functions accept the cnn as an argument
