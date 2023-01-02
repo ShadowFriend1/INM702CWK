@@ -110,8 +110,9 @@ def load_fashion():
     return train_loader, validation_loader, test_loader
 
 def load_covid():
-    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,), ),
-                                    transforms.Resize((256, 256))])
+    # loads the covid dataset and resizes the images to be
+    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,)),
+                                    transforms.Resize((784,))])
 
     train_set = datasets.ImageFolder(root='../../data/Covid19-dataset/train', transform=transform)
     test_set = datasets.ImageFolder(root='../../data/Covid19-dataset/test', transform=transform)
@@ -125,7 +126,6 @@ def load_covid():
     train_loader = DataLoader(train_set, sampler=train_sample, batch_size=64)
     validation_loader = DataLoader(train_set, sampler=validation_sample, batch_size=64)
     test_loader = DataLoader(test_set, batch_size=64, shuffle=True)
-
     return train_loader, validation_loader, test_loader
 
 
@@ -143,12 +143,12 @@ if __name__ == "__main__":
 
     # Loads the covid database and generates the labels from which folder the items were in
     train_loader, validation_loader, test_loader = load_covid()
-
+    print("dataset loaded")
     # Creates an instance of the network
-    cnn = CovidNet(0.2)
+    cnn = CNN(0.2)
 
     # Trains the cnn
-    train_losses, valid_losses = train_model(cnn, train_loader, validation_loader, 1, 'model_covid.pt')
+    train_losses, valid_losses = train_model(cnn, train_loader, validation_loader, 40, 'model_covid.pt')
 
     plt.plot(train_losses, label='Train Loss')
     plt.plot(valid_losses, label='Valid Loss')
@@ -156,3 +156,8 @@ if __name__ == "__main__":
     plt.ylabel("Loss Value")
     plt.legend()
     plt.show()
+
+    # Loads covid model
+    # model = CovidNet(0.2)
+    # model.load_state_dict(torch.load('model_covid.pt'))
+    # model_test(model, test_loader)

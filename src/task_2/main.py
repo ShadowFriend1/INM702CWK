@@ -93,7 +93,7 @@ def load_model(filename):
         return pickle.load(file)
 
 # trains a cnn model
-def train_model(model, train_x, train_y, layers, dropout, alpha, iterations):
+def train_model(train_x, train_y, layers, dropout, alpha, iterations):
     cnn = My_Cnn(layers, len(train_x), 10)
     predictions = cnn.train(train_x, train_y, alpha, iterations, dropout, True)
 
@@ -131,5 +131,11 @@ if __name__ == "__main__":
     train_x, train_y, test_x, test_y = load_mnist("../../data/MNIST/", "train-images.idx3-ubyte",
                                                   "train-labels.idx1-ubyte", "t10k-images.idx3-ubyte",
                                                   "t10k-labels.idx1-ubyte", random_seed)
+    # trains the model
+    # The layers argument is for the hidden layers, it is a list of lists of the format:
+    # [["layer_name", nodes]] for example [["relu", 10], ["sigmoid", 10]]
+    # allowed layers are relu and sigmoid
+    # train_model(train_x, train_y, layers, dropout, alpha, iterations)
+
     cnn = load_model('models/relu_10_with_drop_0-8_alpha_0-2_iter_10000')
     prediction_test(test_x, cnn, test_y, random_seed)
